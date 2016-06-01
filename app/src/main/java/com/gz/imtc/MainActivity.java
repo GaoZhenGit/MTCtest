@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(MainActivity.this, RemoteActivity.class));
             }
         });
-        button2.setText("register unique");
+        button2.setText("注册独立消息：uni1");
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,7 +83,7 @@ public class MainActivity extends Activity {
                         return bundle;
                     }
                 };
-                MTCManager.getMTC().registerUnique("rec1", uniqueMsgReceiver);
+                MTCManager.getMTC().registerUnique("uni1", uniqueMsgReceiver);
             }
         });
         button3.setText("send local unique");
