@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.gz.mtc.core.IMessage;
 import com.gz.mtc.core.IMsgCallback;
@@ -13,7 +14,6 @@ import com.gz.mtc.core.MTCManager;
 import com.gz.mtc.core.Message;
 import com.gz.mtc.core.MsgCallback;
 import com.gz.mtc.core.MutiMsgReceiver;
-import com.gz.mtc.core.ProcessUtil;
 import com.gz.mtc.core.UniqueMsgReceiver;
 
 public class RemoteActivity extends Activity {
@@ -41,56 +41,98 @@ public class RemoteActivity extends Activity {
         button7 = (Button) findViewById(R.id.button7);
 
 
-        button1.setText("rem->rem,asyn,syn,unique");
+        button1.setText("注册独立消息uni1");
         button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i("remoteAct", ProcessUtil.getProcessName());
-                Message message = new Message();
-                message.setMid("rec1");
-                Bundle bundle = MTCManager.getMTC().sendUniqueMessage(message);
-                Log.i("remoteAct", "getSynResult:" + ((bundle == null || bundle.get("key") == null) ? null : bundle.get("key")));
-                MTCManager.getMTC().sendUniqueMessage(message, new MsgCallback() {
-                    @Override
-                    public void onComplete(Bundle bundle) {
-                        Log.i("remoteAct", "callback:" + ((bundle == null || bundle.get("key") == null) ? null : bundle.get("key")));
-                    }
-                });
-            }
-        });
-        button2.setText("register unimsg");
-        button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 UniqueMsgReceiver uniqueMsgReceiver = new UniqueMsgReceiver() {
                     @Override
-                    public void onAsynReceive(IMessage message, IMsgCallback msgCallback) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("key", "rem->rem,asyn");
+                    public void onAsynReceive(final IMessage message, IMsgCallback msgCallback) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    tag(Tag, "收到独立异步消息：" + message.getMid() + "\n内容："
+                                            + (message.getPayload() != null ?
+                                            message.getPayload().getString("key") : "null"));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
                         try {
                             Thread.sleep(3000);
-                            msgCallback.onComplete(bundle);
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                        }
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString("key", "独立消息回复");
+                        if (msgCallback != null) {
+                            try {
+                                msgCallback.onComplete(bundle);
+                            } catch (RemoteException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
                     @Override
-                    public Bundle onSynReceive(IMessage message) {
+                    public Bundle onSynReceive(final IMessage message) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    tag(Tag, "收到独立同步消息：" + message.getMid() + "\n内容："
+                                            + (message.getPayload() != null ?
+                                            message.getPayload().getString("key") : "null"));
+                                } catch (RemoteException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+
                         Bundle bundle = new Bundle();
-                        bundle.putString("key", "rem->rem,syn");
+                        bundle.putString("key", "独立消息回复");
                         return bundle;
                     }
                 };
-                MTCManager.getMTC().registerUnique("rec1", uniqueMsgReceiver);
+                MTCManager.getMTC().registerUnique("uni1",uniqueMsgReceiver);
             }
         });
+        button2.setText("发送本地独立消息uni1（同步）");
+        button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.setMid("uni1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key","data");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendUniqueMessage(message);
+            }
+        });
+        button3.setText("发送本地独立消息uni1（异步）");
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Message message = new Message();
+                message.setMid("uni1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key","data");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendUniqueMessage(message, new MsgCallback() {
+                    @Override
+                    public void onComplete(final Bundle bundle) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tag(Tag, "异步消息回调：" + (bundle == null ? null : bundle.getString("key")));
+                            }
+                        });
 
+                    }
+                });
             }
         });
 
@@ -147,5 +189,10 @@ public class RemoteActivity extends Activity {
                 MTCManager.getMTC().sendMutiIPCMessage(message);
             }
         });
+    }
+
+    public void tag(String tag, String msg) {
+        Log.i(tag, msg);
+        Toast.makeText(this, tag + ":" + msg, Toast.LENGTH_SHORT).show();
     }
 }
