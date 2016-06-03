@@ -37,11 +37,6 @@ public class LocalMTC extends BaseMTC {
                 @Override
                 public void connected() {
                     Log.i("proxy", "connect");
-//                    try {
-//                        remoteProxys.put(proxy.bridge.getProcessName(), proxy);
-//                    } catch (RemoteException e) {
-//                        e.printStackTrace();
-//                    }
                 }
             });
         }
@@ -157,8 +152,7 @@ public class LocalMTC extends BaseMTC {
     public void sendUniqueIPCMessage(IMessage message, IMsgCallback callback) {
         try {
             if (mainProcessBridge.checkUniqueMsgExist(message.getMid())) {
-                sendUniqueMessage(message, callback);//先发送本地进程
-                return;
+                sendUniqueMessage(message, callback);//若接收方在主进程，则先发送本地进程，不再在远程进程中搜索发送
             } else {
                 for (RemoteProcessProxy proxy : remoteProxys.values()) {
                     sendUniqueIPCMessage(message, proxy.processName, callback);
