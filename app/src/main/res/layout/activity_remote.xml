@@ -63,12 +63,19 @@
         android:layout_below="@+id/button5"
         android:layout_centerHorizontal="true" />
 
+    <EditText
+        android:id="@+id/edittext1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/button6" />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New Button"
         android:id="@+id/button7"
-        android:layout_below="@+id/button6"
+        android:layout_below="@+id/edittext1"
         android:layout_centerHorizontal="true" />
 
     <Button
@@ -86,4 +93,21 @@
         android:id="@+id/button9"
         android:layout_below="@+id/button8"
         android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Button"
+        android:id="@+id/button10"
+        android:layout_below="@+id/button9"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Button"
+        android:id="@+id/button11"
+        android:layout_below="@+id/button10"
+        android:layout_alignLeft="@+id/button10"
+        android:layout_alignStart="@+id/button10" />
 </RelativeLayout>

@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.gz.mtc.core.IMessage;
@@ -13,7 +14,6 @@ import com.gz.mtc.core.IMsgCallback;
 import com.gz.mtc.core.MTCManager;
 import com.gz.mtc.core.Message;
 import com.gz.mtc.core.MsgCallback;
-import com.gz.mtc.core.MutiMsgReceiver;
 import com.gz.mtc.core.UniqueMsgReceiver;
 
 public class RemoteActivity extends Activity {
@@ -27,6 +27,7 @@ public class RemoteActivity extends Activity {
     private Button button5;
     private Button button6;
     private Button button7;
+    private EditText editText1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +40,7 @@ public class RemoteActivity extends Activity {
         button5 = (Button) findViewById(R.id.button5);
         button6 = (Button) findViewById(R.id.button6);
         button7 = (Button) findViewById(R.id.button7);
+        editText1 = (EditText) findViewById(R.id.edittext1);
 
 
         button1.setText("注册独立消息uni1");
@@ -97,7 +99,12 @@ public class RemoteActivity extends Activity {
                         return bundle;
                     }
                 };
-                MTCManager.getMTC().registerUnique("uni1",uniqueMsgReceiver);
+                boolean isSuccess = MTCManager.getMTC().registerUnique("uni1", uniqueMsgReceiver);
+                if (isSuccess) {
+                    tag(Tag, "注册成功");
+                } else {
+                    tag(Tag, "注册失败");
+                }
             }
         });
         button2.setText("发送本地独立消息uni1（同步）");
@@ -107,7 +114,7 @@ public class RemoteActivity extends Activity {
                 Message message = new Message();
                 message.setMid("uni1");
                 Bundle bundle = new Bundle();
-                bundle.putString("key","data");
+                bundle.putString("key", "data");
                 message.setPayload(bundle);
                 MTCManager.getMTC().sendUniqueMessage(message);
             }
@@ -119,7 +126,7 @@ public class RemoteActivity extends Activity {
                 Message message = new Message();
                 message.setMid("uni1");
                 Bundle bundle = new Bundle();
-                bundle.putString("key","data");
+                bundle.putString("key", "data");
                 message.setPayload(bundle);
                 MTCManager.getMTC().sendUniqueMessage(message, new MsgCallback() {
                     @Override
@@ -136,57 +143,76 @@ public class RemoteActivity extends Activity {
             }
         });
 
-        button4.setText("send ipc syn");
+        button4.setText("发送匿名ipc独立消息uni1（同步）");
         button4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Message message = new Message();
-                message.setMid("rec1");
-                Bundle result = MTCManager.getMTC().sendUniqueIPCMessage(message, "com.gz.imtc:remote");
-                Log.i("localAct", "getIPCSynResult:" + ((result == null || result.get("key") == null) ? null : result.get("key")));
+                message.setMid("uni1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key", "IpcData");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendUniqueIPCMessage(message);
             }
         });
 
-        button5.setText("send ipc Asyn");
+        button5.setText("发送匿名ipc独立消息uni1（异步）");
         button5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Message message = new Message();
-                message.setMid("rec1");
+                message.setMid("uni1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key", "IpcData");
+                message.setPayload(bundle);
                 MTCManager.getMTC().sendUniqueIPCMessage(message, new MsgCallback() {
                     @Override
-                    public void onComplete(Bundle result) {
-                        Log.i("localAct", "callback:" + ((result == null || result.get("key") == null) ? null : result.get("key")));
+                    public void onComplete(final Bundle bundle) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tag(Tag, "异步消息回调：" + (bundle == null ? null : bundle.getString("key")));
+                            }
+                        });
                     }
                 });
             }
         });
 
-        button6.setText("register muti");
+        button6.setText("发送指定ipc独立消息uni1（同步）");
         button6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MutiMsgReceiver mutiMsgReceiver = new MutiMsgReceiver() {
-                    @Override
-                    public void onReceive(IMessage message) {
-                        try {
-                            Log.i("remoteAct","receive:" + message.getMid());
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                };
-                MTCManager.getMTC().register("mut3",mutiMsgReceiver);
+                Message message = new Message();
+                message.setMid("uni1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key", "data");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendUniqueIPCMessage(message, editText1.getText().toString());
             }
         });
+        editText1.setHint("进程名");
 
-        button7.setText("send muti");
+        button7.setText("发送指定ipc独立消息uni1（异步）");
         button7.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Message message = new Message();
-                message.setMid("mut3");
-                MTCManager.getMTC().sendMutiIPCMessage(message);
+                message.setMid("uni1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key", "data");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendUniqueIPCMessage(message, editText1.getText().toString(), new MsgCallback() {
+                    @Override
+                    public void onComplete(final Bundle bundle) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tag(Tag, "异步消息回调：" + (bundle == null ? null : bundle.getString("key")));
+                            }
+                        });
+                    }
+                });
             }
         });
     }
