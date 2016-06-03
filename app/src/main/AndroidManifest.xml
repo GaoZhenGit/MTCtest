@@ -9,7 +9,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Holo.Light.NoActionBar">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,8 +27,11 @@
             android:process=":remote" />
 
         <activity android:name=".LocalMethodTestActivity" />
-        <activity android:name=".RemoteActivity"
-            android:process=":remote"/>
+        <activity
+            android:name=".RemoteActivity"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden"
+            android:configChanges="orientation|keyboardHidden"
+            android:process=":remote" />
     </application>
 
 </manifest>
