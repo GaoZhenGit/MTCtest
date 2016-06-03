@@ -14,6 +14,7 @@ import com.gz.mtc.core.IMsgCallback;
 import com.gz.mtc.core.MTCManager;
 import com.gz.mtc.core.Message;
 import com.gz.mtc.core.MsgCallback;
+import com.gz.mtc.core.MutiMsgReceiver;
 import com.gz.mtc.core.UniqueMsgReceiver;
 
 public class RemoteActivity extends Activity {
@@ -27,7 +28,16 @@ public class RemoteActivity extends Activity {
     private Button button5;
     private Button button6;
     private Button button7;
+    private Button button8;
+    private Button button9;
+    private Button button10;
+    private Button button11;
+    private Button button12;
+    private Button button13;
     private EditText editText1;
+
+    private MutiMsgReceiver mutiMsgReceiver;
+    private UniqueMsgReceiver uniqueMsgReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,14 +50,20 @@ public class RemoteActivity extends Activity {
         button5 = (Button) findViewById(R.id.button5);
         button6 = (Button) findViewById(R.id.button6);
         button7 = (Button) findViewById(R.id.button7);
+        button8 = (Button) findViewById(R.id.button8);
+        button9 = (Button) findViewById(R.id.button9);
+        button10 = (Button) findViewById(R.id.button10);
         editText1 = (EditText) findViewById(R.id.edittext1);
+        button11 = (Button) findViewById(R.id.button11);
+        button12 = (Button) findViewById(R.id.button12);
+        button13 = (Button) findViewById(R.id.button13);
 
 
         button1.setText("注册独立消息uni1");
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UniqueMsgReceiver uniqueMsgReceiver = new UniqueMsgReceiver() {
+                uniqueMsgReceiver = new UniqueMsgReceiver() {
                     @Override
                     public void onAsynReceive(final IMessage message, IMsgCallback msgCallback) {
                         runOnUiThread(new Runnable() {
@@ -213,6 +229,86 @@ public class RemoteActivity extends Activity {
                         });
                     }
                 });
+            }
+        });
+
+        button8.setText("注册非独立消息mut1");
+        button8.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mutiMsgReceiver = new MutiMsgReceiver() {
+                    @Override
+                    public void onReceive(final IMessage message) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    tag(Tag, "收到非独立消息：" + message.getMid() + "\n内容："
+                                            + (message.getPayload() != null ?
+                                            message.getPayload().getString("key") : "null"));
+                                } catch (RemoteException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                };
+                MTCManager.getMTC().register("mut1", mutiMsgReceiver);
+            }
+        });
+
+        button9.setText("发送本地非独立消息mut1");
+        button9.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.setMid("mut1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key", "mutiDataRemote");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendMutiMessage(message);
+            }
+        });
+
+        button10.setText("发送匿名ipc非独立消息mut1");
+        button10.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.setMid("mut1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key", "mutiDataRemote");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendMutiIPCMessage(message);
+            }
+        });
+
+        button11.setText("发送指定ipc非独立消息mut1");
+        button11.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.setMid("mut1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key", "mutiDataRemote");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendMutiIPCMessage(message, editText1.getText().toString());
+            }
+        });
+
+        button12.setText("反注册独立消息");
+        button12.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MTCManager.getMTC().unRegister(uniqueMsgReceiver);
+            }
+        });
+
+        button13.setText("反注册非独立消息");
+        button13.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MTCManager.getMTC().unRegister(mutiMsgReceiver);
             }
         });
     }

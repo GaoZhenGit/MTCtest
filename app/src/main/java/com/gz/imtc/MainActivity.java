@@ -33,6 +33,10 @@ public class MainActivity extends Activity {
     private Button button8;
     private Button button9;
     private Button button10;
+    private Button button11;
+    private Button button12;
+    private Button button13;
+    private Button button14;
     private MutiMsgReceiver mutiMsgReceiver;
     private UniqueMsgReceiver uniqueMsgReceiver;
 
@@ -52,6 +56,10 @@ public class MainActivity extends Activity {
         button8 = (Button) findViewById(R.id.button8);
         button9 = (Button) findViewById(R.id.button9);
         button10 = (Button) findViewById(R.id.button10);
+        button11 = (Button) findViewById(R.id.button11);
+        button12 = (Button) findViewById(R.id.button12);
+        button13 = (Button) findViewById(R.id.button13);
+        button14 = (Button) findViewById(R.id.button14);
 
         button1.setText("启动远程Activity");
         button1.setOnClickListener(new View.OnClickListener() {
@@ -230,6 +238,86 @@ public class MainActivity extends Activity {
                         });
                     }
                 });
+            }
+        });
+
+        button9.setText("注册非独立消息mut1");
+        button9.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mutiMsgReceiver = new MutiMsgReceiver() {
+                    @Override
+                    public void onReceive(final IMessage message) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    tag(Tag, "收到非独立消息：" + message.getMid() + "\n内容："
+                                            + (message.getPayload() != null ?
+                                            message.getPayload().getString("key") : "null"));
+                                } catch (RemoteException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                };
+                MTCManager.getMTC().register("mut1",mutiMsgReceiver);
+            }
+        });
+
+        button10.setText("发送本地非独立消息mut1");
+        button10.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.setMid("mut1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key","mutiDataLocal");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendMutiMessage(message);
+            }
+        });
+
+        button11.setText("发送匿名ipc非独立消息mut1");
+        button11.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.setMid("mut1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key","mutiDataLocal");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendMutiIPCMessage(message);
+            }
+        });
+
+        button12.setText("发送指定ipc非独立消息mut1");
+        button12.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.setMid("mut1");
+                Bundle bundle = new Bundle();
+                bundle.putString("key","mutiDataLocal");
+                message.setPayload(bundle);
+                MTCManager.getMTC().sendMutiIPCMessage(message, editText1.getText().toString());
+            }
+        });
+
+        button13.setText("反注册独立消息");
+        button13.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MTCManager.getMTC().unRegister(uniqueMsgReceiver);
+            }
+        });
+
+        button14.setText("反注册非独立消息");
+        button14.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MTCManager.getMTC().unRegister(mutiMsgReceiver);
             }
         });
     }

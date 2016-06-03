@@ -249,8 +249,7 @@ public class LocalMTC extends BaseMTC {
             if (message == null)
                 return;
             if (TextUtils.isEmpty(processName)) {
-                //如果远程进程发送至此，未指定进程名，则在主进程和其他进程也发送广播消息
-                LocalMTC.this.sendMutiMessage(message);
+                //如果远程进程发送至此，未指定进程名，则在主进程和其他进程也发送广播消息（由自身进程该方法处理）
                 LocalMTC.this.sendMutiIPCMessage(message);
             } else {
                 if (processName.equals(ProcessUtil.getProcessName())) {
